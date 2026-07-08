@@ -1,0 +1,6 @@
+# prostředí a cache
+.venv/
+__pycache__/
+*.pyc
+radar.db
+.DS_Store

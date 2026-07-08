@@ -1,0 +1,6 @@
+# Flight Radar — dependencies
+# fli publishes to PyPI under the package name "flights"
+# (0.10.0 z build promptu na PyPI není; API ověřeno proti 0.9.0 — shoduje se)
+flights>=0.9.0
+fastapi>=0.110
+uvicorn[standard]>=0.29

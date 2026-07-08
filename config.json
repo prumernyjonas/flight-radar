@@ -1,0 +1,35 @@
+{
+  "currency": "CZK",
+  "language": "cs",
+  "country": "CZ",
+  "adults": 1,
+  "search_window_days": 90,
+  "cache_ttl_hours": 8,
+  "request_delay_seconds": 1.8,
+
+  "anywhere": {
+    "origins": ["PRG", "VIE", "BRQ"],
+    "nights": 4,
+    "max_stops": "ANY"
+  },
+
+  "weekend": {
+    "origins": ["PRG", "VIE", "BRQ"],
+    "nights": 2,
+    "depart_days": ["FRI", "SAT"],
+    "max_stops": "ANY"
+  },
+
+  "watchlist": [
+    { "dest": "BCN", "label": "Barcelona",  "nights": 4, "target_price": 2800 },
+    { "dest": "LIS", "label": "Lisabon",    "nights": 5, "target_price": 3800 },
+    { "dest": "FCO", "label": "\u0158\u00edm",        "nights": 3, "target_price": 2600 },
+    { "dest": "ATH", "label": "Ath\u00e9ny",      "nights": 4, "target_price": 3200 },
+    { "dest": "LHR", "label": "Lond\u00fdn",     "nights": 3, "target_price": 2400 },
+    { "dest": "CPH", "label": "Koda\u0148",      "nights": 3, "target_price": 2600 },
+    { "dest": "AGP", "label": "M\u00e1laga",     "nights": 5, "target_price": 3600 },
+    { "dest": "RAK", "label": "Marr\u00e1ke\u0161",   "nights": 5, "target_price": 4500 },
+    { "dest": "JFK", "label": "New York",   "nights": 7, "target_price": 9500 },
+    { "dest": "BKK", "label": "Bangkok",    "nights": 12, "target_price": 14000 }
+  ]
+}
