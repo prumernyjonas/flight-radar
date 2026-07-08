@@ -58,27 +58,40 @@ a{color:var(--navy)}
 .progress.on{opacity:1}
 .progress i{display:block;height:100%;background:var(--yellow);width:0%;transition:width .6s var(--ease)}
 
-/* ---------- záhlaví obsahu: taby + filtry ---------- */
-.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:20px 0 16px}
-.tabs{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;box-shadow:var(--shadow)}
+/* ---------- taby ---------- */
+.tabs{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;box-shadow:var(--shadow);margin:20px 0 12px}
 .tab{font-weight:700;font-size:14px;color:var(--muted);padding:8px 18px;border-radius:8px;transition:color .15s,background .15s}
 .tab:hover{color:var(--ink)}
 .tab[aria-selected="true"]{background:var(--navy);color:#fff}
-.filters{display:flex;gap:10px;align-items:center;margin-left:auto;flex-wrap:wrap}
-.filters label{font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px}
+
+/* ---------- panel filtrů ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:14px 16px 12px;margin-bottom:18px}
+.f-rows{display:flex;flex-wrap:wrap;gap:14px 26px}
+.f-group{display:flex;flex-direction:column;gap:6px}
+.f-label{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.f-label .rf{color:var(--orange);font-weight:800}
+.f-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .chip{
   font-size:13px;font-weight:700;border:1.5px solid var(--line);border-radius:99px;
-  padding:5px 13px;color:var(--muted);background:var(--surface);transition:all .15s;
+  padding:5px 12px;color:var(--muted);background:var(--surface);transition:all .15s;
 }
 .chip[aria-pressed="true"]{color:#fff;background:var(--navy);border-color:var(--navy)}
-select,input[type=number]{
+.chip.day{padding:5px 9px;font-size:12px}
+select,input[type=number],input[type=date]{
   font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:var(--surface);
   border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;
 }
-input[type=number]{width:100px}
-.hint{font-size:12px;color:var(--muted);margin:-8px 0 14px}
+input[type=number]{width:110px}
+input[type=date]{padding:6px 8px}
+.range-sep{color:var(--muted);font-weight:700}
+.panel .hint{font-size:12px;color:var(--muted);font-weight:600;margin-top:10px}
+.panel .hint .rf{color:var(--orange);font-weight:800}
 
 /* ---------- výsledky ---------- */
+.result-head{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
+.result-head h2{font-size:15px;font-weight:800}
+.result-head span{font-size:13px;font-weight:600;color:var(--muted)}
 .rows{display:flex;flex-direction:column;gap:10px;padding-bottom:64px}
 .deal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
   box-shadow:var(--shadow);overflow:hidden;animation:rise .4s var(--ease) both}
@@ -144,7 +157,7 @@ input[type=number]{width:100px}
 .empty{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
   text-align:center;padding:56px 24px;box-shadow:var(--shadow)}
 .empty h2{font-size:19px;font-weight:800;margin-bottom:8px;text-wrap:balance}
-.empty p{color:var(--muted);font-weight:600;font-size:14px;max-width:420px;margin:0 auto 20px}
+.empty p{color:var(--muted);font-weight:600;font-size:14px;max-width:440px;margin:0 auto 20px}
 .btn-navy{background:var(--navy);color:#fff}
 .btn-navy:hover{background:var(--navy-deep)}
 
@@ -152,7 +165,6 @@ footer{padding:0 0 40px;color:var(--muted);font-size:12px;font-weight:600;text-a
 
 /* ---------- responsivita ---------- */
 @media (max-width:680px){
-  .filters{margin-left:0}
   .deal-row{grid-template-columns:1fr auto;grid-template-areas:"route price" "when chev"}
   .route-cell{grid-area:route}.when{grid-area:when;text-align:left}.price{grid-area:price}
   .chev{grid-area:chev;justify-self:end}
@@ -184,28 +196,66 @@ footer{padding:0 0 40px;color:var(--muted);font-size:12px;font-weight:600;text-a
 </div>
 
 <main class="wrap">
-  <div class="controls">
-    <nav class="tabs" role="tablist" aria-label="Režim hledání">
-      <button class="tab" role="tab" data-mode="anywhere" aria-selected="true">Kamkoliv</button>
-      <button class="tab" role="tab" data-mode="watchlist" aria-selected="false">Watchlist</button>
-      <button class="tab" role="tab" data-mode="weekend" aria-selected="false">Víkend</button>
-    </nav>
-    <div class="filters">
-      <span id="originChips" role="group" aria-label="Domácí letiště" style="display:flex;gap:6px"></span>
-      <label for="stopsSel">Přestupy
-        <select id="stopsSel">
+  <nav class="tabs" role="tablist" aria-label="Režim hledání">
+    <button class="tab" role="tab" data-mode="anywhere" aria-selected="true">Kamkoliv</button>
+    <button class="tab" role="tab" data-mode="watchlist" aria-selected="false">Watchlist</button>
+    <button class="tab" role="tab" data-mode="weekend" aria-selected="false">Víkend</button>
+  </nav>
+
+  <div class="panel">
+    <div class="f-rows">
+      <div class="f-group">
+        <span class="f-label" id="dateLbl">Termín odletu</span>
+        <div class="f-controls">
+          <select id="dateSel" aria-labelledby="dateLbl">
+            <option value="any">Kdykoliv (90 dní)</option>
+          </select>
+          <span id="customRange" hidden>
+            <input type="date" id="dateFrom" aria-label="Odlet od">
+            <span class="range-sep">–</span>
+            <input type="date" id="dateTo" aria-label="Odlet do">
+          </span>
+        </div>
+      </div>
+      <div class="f-group">
+        <span class="f-label">Den odletu</span>
+        <div class="f-controls" id="dayChips" role="group" aria-label="Dny odletu"></div>
+      </div>
+      <div class="f-group">
+        <span class="f-label">Letiště</span>
+        <div class="f-controls" id="originChips" role="group" aria-label="Domácí letiště"></div>
+      </div>
+      <div class="f-group">
+        <span class="f-label" id="priceLbl">Max cena (Kč)</span>
+        <input type="number" id="maxPrice" min="0" step="100" placeholder="bez limitu" aria-labelledby="priceLbl">
+      </div>
+      <div class="f-group">
+        <span class="f-label" id="sortLbl">Řadit</span>
+        <select id="sortSel" aria-labelledby="sortLbl">
+          <option value="price">od nejlevnější</option>
+          <option value="date">podle data odletu</option>
+          <option value="name">podle destinace</option>
+        </select>
+      </div>
+      <div class="f-group" id="nightsGroup">
+        <span class="f-label" id="nightsLbl">Nocí <span class="rf">↻</span></span>
+        <input type="number" id="nights" min="1" max="30" aria-labelledby="nightsLbl">
+      </div>
+      <div class="f-group">
+        <span class="f-label" id="stopsLbl">Přestupy <span class="rf">↻</span></span>
+        <select id="stopsSel" aria-labelledby="stopsLbl">
           <option value="ANY">libovolně</option>
           <option value="NON_STOP">jen přímé</option>
           <option value="ONE_STOP_OR_FEWER">max 1</option>
         </select>
-      </label>
-      <label for="maxPrice">Max cena
-        <input type="number" id="maxPrice" min="0" step="100" placeholder="Kč">
-      </label>
+      </div>
     </div>
+    <p class="hint">Filtry se projeví okamžitě · položky s <span class="rf">↻</span> vyžadují novou aktualizaci (mění, co se u Googlu hledá)</p>
   </div>
-  <p class="hint">Letiště a přestupy se projeví při další aktualizaci · max cena filtruje okamžitě</p>
 
+  <div class="result-head" id="resultHead" hidden>
+    <h2 id="resultCount"></h2><span id="resultNote"></span>
+  </div>
   <div class="rows" id="rows" aria-live="polite"></div>
 </main>
 
@@ -214,7 +264,8 @@ footer{padding:0 0 40px;color:var(--muted);font-size:12px;font-weight:600;text-a
 <script>
 "use strict";
 const $ = s => document.querySelector(s);
-const state = {mode:"anywhere", config:null, deals:[], updatedAt:null, origins:new Set(), pollTimer:null};
+const state = {mode:"anywhere", config:null, deals:[], updatedAt:null,
+               origins:new Set(), days:new Set([0,1,2,3,4,5,6]), rendered:[], pollTimer:null};
 const czk = new Intl.NumberFormat("cs-CZ",{style:"currency",currency:"CZK",maximumFractionDigits:0});
 const fmtPrice = (p,cur) => cur && cur!=="CZK"
   ? new Intl.NumberFormat("cs-CZ",{style:"currency",currency:cur,maximumFractionDigits:0}).format(p)
@@ -224,41 +275,77 @@ const fmtDay  = iso => new Date(iso).toLocaleDateString("cs-CZ",{day:"numeric",m
 const fmtTime = iso => new Date(iso).toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"});
 const fmtDur  = m => m==null ? "" : `${Math.floor(m/60)} h ${String(m%60).padStart(2,"0")} min`;
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const wd = iso => (new Date(iso+"T12:00").getDay()+6)%7;           // Po=0 … Ne=6
+const DAY_NAMES = ["Po","Út","St","Čt","Pá","So","Ne"];
+const gUrl = (o,d,out,ret)=>"https://www.google.com/travel/flights?q="
+  + encodeURIComponent(`Flights from ${o} to ${d} on ${out}${ret?` through ${ret}`:""}`);
 
 /* --- init --- */
 async function init(){
   state.config = await (await fetch("/api/config")).json();
   $("#demoChip").hidden = !state.config.demo;
-  const chips = $("#originChips");
+
+  const oc = $("#originChips");
   state.config.anywhere.origins.forEach(o=>{
     state.origins.add(o);
-    const b = document.createElement("button");
-    b.className="chip"; b.textContent=o; b.setAttribute("aria-pressed","true");
-    b.onclick = ()=>{
-      if (b.getAttribute("aria-pressed")==="true" && state.origins.size===1) return; // aspoň jedno
-      const on = b.getAttribute("aria-pressed")!=="true";
-      b.setAttribute("aria-pressed", on);
+    oc.appendChild(makeChip(o, true, on=>{
+      if (!on && state.origins.size===1) return false;      // aspoň jedno letiště
       on ? state.origins.add(o) : state.origins.delete(o);
-    };
-    chips.appendChild(b);
+      render(); return true;
+    }));
   });
+  const dc = $("#dayChips");
+  DAY_NAMES.forEach((name,i)=>{
+    const c = makeChip(name, true, on=>{
+      if (!on && state.days.size===1) return false;         // aspoň jeden den
+      on ? state.days.add(i) : state.days.delete(i);
+      render(); return true;
+    });
+    c.classList.add("day");
+    dc.appendChild(c);
+  });
+  syncNights();
   await loadDeals(true);
+}
+
+function makeChip(text, pressed, onToggle){
+  const b = document.createElement("button");
+  b.className="chip"; b.textContent=text; b.setAttribute("aria-pressed", String(pressed));
+  b.onclick = ()=>{
+    const target = b.getAttribute("aria-pressed")!=="true";
+    if (onToggle(target)!==false) b.setAttribute("aria-pressed", String(target));
+  };
+  return b;
 }
 
 document.querySelectorAll(".tab").forEach(t=>{
   t.onclick = async ()=>{
     document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected", x===t));
     state.mode = t.dataset.mode;
+    syncNights();
     await loadDeals(true);
   };
 });
 $("#refreshBtn").onclick = ()=>startRefresh();
 $("#maxPrice").oninput = ()=>render();
+$("#sortSel").onchange = ()=>render();
+$("#dateSel").onchange = ()=>{ $("#customRange").hidden = $("#dateSel").value!=="custom"; render(); };
+$("#dateFrom").onchange = ()=>render();
+$("#dateTo").onchange = ()=>render();
+
+/* nocí: watchlist má délku pobytu na destinaci v configu */
+function syncNights(){
+  const g = $("#nightsGroup");
+  if (state.mode==="watchlist"){ g.style.display="none"; return; }
+  g.style.display="";
+  $("#nights").value = state.config[state.mode].nights;
+}
 
 /* --- data --- */
 async function loadDeals(autoRefresh){
   const r = await (await fetch(`/api/deals?mode=${state.mode}`)).json();
   state.deals = r.deals; state.updatedAt = r.updated_at;
+  rebuildMonths();
   render();
   const st = await (await fetch(`/api/status?mode=${state.mode}`)).json();
   if (st.running){ watchJob(); return; }
@@ -267,7 +354,9 @@ async function loadDeals(autoRefresh){
 }
 
 async function startRefresh(){
-  const body = {mode: state.mode, origins: [...state.origins], max_stops: $("#stopsSel").value};
+  const body = {mode: state.mode, origins: [...state.origins],
+                max_stops: $("#stopsSel").value,
+                nights: state.mode==="watchlist" ? null : parseInt($("#nights").value)||null};
   await fetch("/api/refresh",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
   if (!state.deals.length) renderSkeleton();
   watchJob();
@@ -284,7 +373,7 @@ function watchJob(){
       $("#refreshBtn").disabled = false;
       const r = await (await fetch(`/api/deals?mode=${state.mode}`)).json();
       state.deals = r.deals; state.updatedAt = r.updated_at;
-      render(); updateStatus(false, st);
+      rebuildMonths(); render(); updateStatus(false, st);
     }
   }, 900);
 }
@@ -305,38 +394,93 @@ function updateStatus(running, st){
   }
 }
 
-/* --- render seznamu --- */
-function visibleDeals(){
-  const max = parseFloat($("#maxPrice").value);
-  return (!Number.isNaN(max) && max>0) ? state.deals.filter(d=>d.price<=max) : state.deals;
+/* --- měsíce v nabídce termínů (podle skutečně dostupných dat) --- */
+function rebuildMonths(){
+  const sel = $("#dateSel");
+  const keep = sel.value;
+  const months = new Set();
+  state.deals.forEach(d=>(d.dates??[{out:d.out}]).forEach(x=>months.add(x.out.slice(0,7))));
+  const opts = ['<option value="any">Kdykoliv (90 dní)</option>']
+    .concat([...months].sort().map(m=>{
+      const label = new Date(m+"-01T12:00").toLocaleDateString("cs-CZ",{month:"long",year:"numeric"});
+      return `<option value="${m}">${label}</option>`;
+    }))
+    .concat(['<option value="custom">Vlastní data…</option>']);
+  sel.innerHTML = opts.join("");
+  if ([...sel.options].some(o=>o.value===keep)) sel.value = keep;
+  $("#customRange").hidden = sel.value!=="custom";
 }
 
+/* --- filtrování nad cenovou mřížkou --- */
+function dateInRange(out){
+  const mode = $("#dateSel").value;
+  if (mode==="any") return true;
+  if (mode==="custom"){
+    const f = $("#dateFrom").value, t = $("#dateTo").value;
+    return (!f || out>=f) && (!t || out<=t);
+  }
+  return out.startsWith(mode);   // konkrétní měsíc YYYY-MM
+}
+
+function computeRows(){
+  const max = parseFloat($("#maxPrice").value);
+  const rows = [];
+  for (const d of state.deals){
+    // fallback pro starší cache bez mřížky
+    const grid = d.dates ?? [{origin:d.origin, out:d.out, ret:d.ret, price:d.price}];
+    const dates = grid.filter(x =>
+      state.origins.has(x.origin ?? d.origin ?? d.origins[0])
+      && dateInRange(x.out)
+      && state.days.has(wd(x.out)));
+    if (!dates.length) continue;
+    const best = dates.reduce((a,b)=>b.price<a.price?b:a);
+    if (!Number.isNaN(max) && max>0 && best.price>max) continue;
+    const origin = best.origin ?? d.origin ?? d.origins[0];
+    rows.push({...d, origin, out:best.out, ret:best.ret, price:best.price,
+      is_deal: !!(d.target_price && best.price<=d.target_price),
+      url: gUrl(origin, d.dest, best.out, best.ret), nDates: dates.length});
+  }
+  const sort = $("#sortSel").value;
+  rows.sort(sort==="date" ? (a,b)=>a.out.localeCompare(b.out) || a.price-b.price
+          : sort==="name" ? (a,b)=>a.label.localeCompare(b.label,"cs")
+          : (a,b)=>a.price-b.price);
+  return rows;
+}
+
+/* --- render --- */
 function renderSkeleton(){
+  $("#resultHead").hidden = true;
   $("#rows").innerHTML = Array.from({length:7},()=>'<div class="skel"></div>').join("");
 }
 
 function render(){
-  const deals = visibleDeals();
-  if (!deals.length){
+  const rows = computeRows();
+  state.rendered = rows;
+  const head = $("#resultHead");
+  if (!rows.length){
+    head.hidden = true;
     const filtered = state.deals.length>0;
     $("#rows").innerHTML = `<div class="empty">
-      <h2>${filtered ? "Nic pod tvým cenovým limitem" : "Zatím žádné výsledky"}</h2>
-      <p>${filtered ? "Zkus limit maximální ceny uvolnit, nebo počkej na levnější termíny."
+      <h2>${filtered ? "Filtrům nic neodpovídá" : "Zatím žádné výsledky"}</h2>
+      <p>${filtered ? "Zkus povolit víc dní odletu, jiný měsíc nebo vyšší max cenu."
                     : "Spusť vyhledávání — projdu ceny pro všechna letiště a termíny v příštích 90 dnech."}</p>
       ${filtered ? "" : '<button class="btn btn-navy" onclick="startRefresh()">Vyhledat letenky</button>'}
     </div>`;
     return;
   }
-  $("#rows").innerHTML = deals.map((d,i)=>`
+  head.hidden = false;
+  $("#resultCount").textContent = `${rows.length} ${rows.length===1?"destinace":rows.length<5?"destinace":"destinací"}`;
+  $("#resultNote").textContent = "u každé nejlevnější termín podle filtrů";
+  $("#rows").innerHTML = rows.map((d,i)=>`
     <article class="deal" style="--i:${i}">
       <button class="deal-row" aria-expanded="false" onclick="toggleDetail(${i},this)">
         <div class="route-cell">
-          <div class="route">${esc(d.origin ?? d.origins[0])}<span class="arr">→</span>${esc(d.dest)}${d.is_deal?'<span class="tag-deal">pod limitem</span>':""}</div>
+          <div class="route">${esc(d.origin)}<span class="arr">→</span>${esc(d.dest)}${d.is_deal?'<span class="tag-deal">pod limitem</span>':""}</div>
           <div class="place">${esc(d.label)}${d.country?` · ${esc(d.country)}`:""}</div>
         </div>
         <div class="when">
           <div class="dates">${fmtDate(d.out)} – ${d.ret?fmtDate(d.ret):"?"}</div>
-          <div class="sub">${d.nights} nocí, zpáteční</div>
+          <div class="sub">${d.nights} nocí · nejlevnější z ${d.nDates} termínů</div>
         </div>
         <div class="price">
           <span class="val">${fmtPrice(d.price,d.currency)}</span>
@@ -368,18 +512,18 @@ function flightHtml(f, dateHint){
 }
 
 async function toggleDetail(i, btn){
-  const deal = visibleDeals()[i];
+  const deal = state.rendered[i];
   const card = btn.closest(".deal");
   const box = card.querySelector(".detail");
   const open = box.hidden;
   btn.setAttribute("aria-expanded", open);
   card.classList.toggle("open", open);
   box.hidden = !open;
-  if (!open || box.dataset.loaded) return;
+  if (!open || box.dataset.loaded === deal.out + deal.origin) return;
 
   box.innerHTML = '<div class="loading">Načítám konkrétní spoje…</div>';
   try{
-    const q = new URLSearchParams({origins: deal.origin ?? deal.origins.join(","), dest: deal.dest,
+    const q = new URLSearchParams({origins: deal.origin, dest: deal.dest,
                                    out: deal.out, ret: deal.ret ?? "", stops: $("#stopsSel").value});
     const r = await fetch(`/api/detail?${q}`);
     if (!r.ok) throw new Error((await r.json()).detail ?? r.status);
@@ -394,7 +538,7 @@ async function toggleDetail(i, btn){
            <span class="note">Ceny za 1 osobu, zpáteční let.</span>
            <a class="book" href="${esc(deal.url)}" target="_blank" rel="noopener">Rezervovat na Google Flights</a>
          </div>`;
-    box.dataset.loaded = "1";
+    box.dataset.loaded = deal.out + deal.origin;
   }catch(e){
     box.innerHTML = `<div class="err">Detail se nepodařilo načíst (${esc(e.message)}).</div>
       <div class="detail-foot"><a class="book" href="${esc(deal.url)}" target="_blank" rel="noopener">Otevřít v Google Flights</a></div>`;

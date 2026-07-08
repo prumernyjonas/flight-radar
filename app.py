@@ -44,6 +44,9 @@ def api_deals(mode: str = "anywhere"):
     # cache z demo režimu nesmí prosáknout do ostrého (a naopak)
     if deals and params.get("demo") != flightsearch.DEMO:
         deals, fresh, updated_at = [], False, None
+    # starší formát cache (bez cenové mřížky "dates") -> zobraz, ale vynuť refresh
+    if deals and "dates" not in deals[0]:
+        fresh = False
     return {"mode": mode, "deals": deals, "params": params,
             "updated_at": updated_at, "fresh": fresh}
 
@@ -52,6 +55,7 @@ class RefreshBody(BaseModel):
     mode: str
     origins: list[str] | None = None   # podmnožina domácích letišť
     max_stops: str | None = None       # ANY | NON_STOP | ...
+    nights: int | None = None          # přepíše délku pobytu (kamkoliv / víkend)
 
 
 @app.post("/api/refresh")
@@ -60,7 +64,7 @@ def api_refresh(body: RefreshBody):
     origins = [o for o in (body.origins or ALL_ORIGINS) if o in ALL_ORIGINS] or ALL_ORIGINS
     stops = body.max_stops if body.max_stops in VALID_STOPS else None
 
-    tasks = _build_tasks(body.mode)
+    tasks = _build_tasks(body.mode, body.nights)
     if not store.job_start(body.mode, len(tasks)):
         return {"started": False, "status": store.job_status(body.mode)}
 
@@ -96,14 +100,17 @@ def _check_mode(mode: str):
         raise HTTPException(status_code=400, detail=f"Neznámý režim: {mode}")
 
 
-def _build_tasks(mode: str) -> list[dict]:
-    """Seznam úloh (jedna úloha = jedna destinace = jeden request)."""
+def _build_tasks(mode: str, nights_override: int | None = None) -> list[dict]:
+    """Seznam úloh (jedna úloha = jedna destinace). Watchlist má počet nocí
+    na destinaci v configu, jinde jde přepsat z UI."""
     if mode == "watchlist":
         return [{"dest": w["dest"], "label": w["label"], "nights": w["nights"],
                  "target_price": w["target_price"], "country": None, "region": "watchlist"}
                 for w in CONFIG["watchlist"]]
     src = WEEKEND_DESTINATIONS if mode == "weekend" else DESTINATIONS
     nights = CONFIG["weekend" if mode == "weekend" else "anywhere"]["nights"]
+    if nights_override:
+        nights = max(1, min(30, nights_override))
     return [{"dest": d["iata"], "label": d["city"], "nights": nights,
              "target_price": None, "country": d["country"], "region": d["region"]}
             for d in src]
@@ -138,7 +145,7 @@ def _run_refresh_locked(mode: str, tasks: list[dict], origins: list[str], stops_
                 dates = [d for d in dates if date.fromisoformat(d["out"]).weekday() in days]
             if dates:
                 best = min(dates, key=lambda d: d["price"])
-                deals.append(_make_deal(mode, task, origins, best))
+                deals.append(_make_deal(mode, task, origins, best, dates))
         except Exception:
             errors += 1
             traceback.print_exc()
@@ -154,10 +161,15 @@ def _run_refresh_locked(mode: str, tasks: list[dict], origins: list[str], stops_
     store.job_finish(mode, error=f"{errors} tras selhalo" if errors else None)
 
 
-def _make_deal(mode: str, task: dict, origins: list[str], best: dict) -> dict:
+def _make_deal(mode: str, task: dict, origins: list[str], best: dict,
+               dates: list[dict]) -> dict:
     target = task["target_price"]
     origin = best.get("origin") or origins[0]  # konkrétní letiště nejlevnější ceny
     return {
+        # celá cenová mřížka (každé datum × letiště) — frontend přes ni filtruje
+        "dates": [{"origin": d.get("origin"), "out": d["out"], "ret": d["ret"],
+                   "price": d["price"]}
+                  for d in sorted(dates, key=lambda x: (x["out"], x["price"]))],
         "origin": origin,
         "origins": origins,
         "dest": task["dest"],

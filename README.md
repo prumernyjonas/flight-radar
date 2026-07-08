@@ -43,6 +43,19 @@ Průběh vidíš v hlavičce; víc režimů najednou se řadí do fronty (nikdy 
 nehledá paralelně). Výsledky se kešují v SQLite (`radar.db`) na 8 hodin,
 takže se to platí jen jednou za den.
 
+## Filtry
+
+Aplikace si při aktualizaci ukládá **celou cenovou mřížku** (cena pro každý den
+× letiště), takže tyhle filtry fungují okamžitě, bez nového hledání:
+
+- **Termín odletu** — kdykoliv / konkrétní měsíc / vlastní rozmezí dat
+- **Den odletu** — po–ne (např. jen Pá+So)
+- **Letiště** — PRG / VIE / BRQ
+- **Max cena** a **řazení** (cena / datum / destinace)
+
+Filtry označené ↻ (**přestupy**, **počet nocí**) mění, co se u Googlu hledá,
+a projeví se až při další aktualizaci.
+
 ## Nastavení (`config.json`)
 
 - `watchlist` — destinace, počet nocí, cílová cena (CZK)
